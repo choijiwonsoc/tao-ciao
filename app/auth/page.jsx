@@ -14,7 +14,6 @@ const router = useRouter(); // Add this
 
   // Persist user in localStorage
   useEffect(() => {
-    localStorage.removeItem('user');
     const stored = localStorage.getItem('user');
     if (stored) setUser(JSON.parse(stored));
   }, []);
@@ -36,7 +35,6 @@ const router = useRouter(); // Add this
       if (!res.ok) return setMessage(data.error);
       setUser(data.user);
       localStorage.setItem('user', JSON.stringify(data.user));
-      router.push('/dashboard'); 
     } else {
       // SIGNUP
       const res = await fetch('/api/auth/signup', {
@@ -53,25 +51,24 @@ const router = useRouter(); // Add this
     }
   };
 
-  // const handleLogout = () => {
-  //   setUser(null);
-  //   localStorage.removeItem('user');
-    
-  // };
+  const handleLogout = () => {
+    setUser(null);
+    localStorage.removeItem('user');
+  };
 
-  // if (user) {
-  //   return (
-  //     <div className="min-h-screen flex flex-col items-center justify-center p-4">
-  //       <h2 className="text-2xl font-bold mb-4">Hello, {user.username}</h2>
-  //       <button
-  //         onClick={handleLogout}
-  //         className="bg-red-500 text-white p-2 rounded hover:bg-red-600"
-  //       >
-  //         Logout
-  //       </button>
-  //     </div>
-  //   );
-  // }
+  if (user) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center p-4">
+        <h2 className="text-2xl font-bold mb-4">Hello, {user.username}</h2>
+        <button
+          onClick={handleLogout}
+          className="bg-red-500 text-white p-2 rounded hover:bg-red-600"
+        >
+          Logout
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">

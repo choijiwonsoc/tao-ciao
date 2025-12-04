@@ -8,7 +8,7 @@ export default function Sidebar() {
   const [open, setOpen] = useState(false);
 
   const menuItems = [
-    { name: 'Dashboard', href: '/' },
+    { name: 'Dashboard', href: '/dashboard' },
     { name: 'Items', href: '/items' },
     { name: 'Friends', href: '/friends' },
     { name: 'Settings', href: '/settings' },
