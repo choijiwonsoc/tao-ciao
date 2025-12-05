@@ -11,8 +11,50 @@ export default function Friends() {
   const [friends, setFriends] = useState([]); // saved friends
   const [user, setUser] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [tab, setTab] = useState("items");
+  const [leaderboardMoney, setLeaderboardMoney] = useState([]);
+  const [leaderboardItems, setLeaderboardItems] = useState([]);
+
 
   const [selectedUser, setSelectedUser] = useState(null); // popup user
+
+  function LeaderboardCard({ user, index }) {
+    const medal = ["🥇", "🥈", "🥉"][index] || null;
+
+    return (
+      <div
+        className={`flex items-center justify-between p-4 rounded-xl shadow-sm border 
+        ${index === 0 ? "bg-yellow-50 border-yellow-300" : ""}
+        ${index === 1 ? "bg-gray-100 border-gray-300" : ""}
+        ${index === 2 ? "bg-orange-50 border-orange-300" : ""}
+        ${index > 2 ? "bg-white border-gray-200" : ""}
+        hover:shadow-md transition-all`}
+      >
+        {/* Rank */}
+        <div className="text-xl font-bold w-10 text-center">
+          {medal || index + 1}
+        </div>
+
+        {/* Name + Info */}
+        <div className="flex flex-col flex-1 ml-3">
+          <p className="font-semibold text-gray-800">{user.name}</p>
+
+          {user.itemsStoppedCount !== undefined && (
+            <p className="text-sm text-gray-500">
+              {user.itemsStoppedCount} items stopped
+            </p>
+          )}
+
+          {user.moneySaved !== undefined && (
+            <p className="text-sm text-green-600 font-medium">
+              ${user.moneySaved.toLocaleString()}
+            </p>
+          )}
+        </div>
+      </div>
+    );
+  }
+
 
   // Load logged-in user
   useEffect(() => {
@@ -21,14 +63,61 @@ export default function Friends() {
       const u = JSON.parse(stored);
       setUser(u);
 
-      // Fetch full friend objects
-      if (u.friends && u.friends.length > 0) {
-        fetch(`/api/users/bulk?ids=${u.friends.join(',')}`)
-          .then(res => res.json())
-          .then(data => {
-            setFriends(data.users);   // full objects
-          });
-      }
+      const loadFriendsAndLeaderboard = async () => {
+        let friendList = [];
+
+        if (u.friends && u.friends.length > 0) {
+          const res = await fetch(`/api/users/bulk?ids=${u.friends.join(',')}`);
+          const data = await res.json();
+          friendList = data.users;
+          setFriends(friendList);
+        }
+
+        // Combine me + friends
+        const allUsers = [u, ...friendList];
+        console.log(allUsers);
+
+        const leaderboardData = await Promise.all(
+          allUsers.map(async (user) => {
+            // user.items = [ObjectId, ObjectId, …]
+
+            // 1. fetch all items in parallel
+            const fetchedItems = await Promise.all(
+              (user.items || []).map(async (itemId) => {
+                const res = await fetch(`/api/items/getOne?id=${itemId}`);
+                const data = await res.json();
+                return data.item; // return the item object
+              })
+            );
+            console.log(fetchedItems);
+
+            // 2. filter stopped items
+            const stoppedItems = fetchedItems.filter(i => i?.status === "stopped");
+            // 3. compute metrics
+            return {
+              id: user._id,
+              name: user.name || user.username,
+              itemsStoppedCount: stoppedItems.length,
+              moneySaved: stoppedItems.reduce((sum, it) => sum + (it.price || 0), 0),
+            };
+          })
+        );
+
+        // Sort & take top 5
+        setLeaderboardItems(
+          [...leaderboardData]
+            .sort((a, b) => b.itemsStoppedCount - a.itemsStoppedCount)
+            .slice(0, 5)
+        );
+
+        setLeaderboardMoney(
+          [...leaderboardData]
+            .sort((a, b) => b.moneySaved - a.moneySaved)
+            .slice(0, 5)
+        );
+      };
+
+      loadFriendsAndLeaderboard();
     }
   }, []);
 
@@ -108,6 +197,51 @@ export default function Friends() {
       )}
 
       {/* FRIENDS LIST */}
+      <h3 className="text-lg font-semibold mt-6">Leaderboard</h3>
+      <div>
+        <div className="mt-6 w-full">
+          {/* Tabs */}
+          <div className="flex items-center gap-3 mb-4">
+            <button
+              onClick={() => setTab("items")}
+              className={`px-4 py-2 rounded-full text-sm font-semibold transition-all
+        ${tab === "items"
+                  ? "bg-indigo-600 text-white shadow-md"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"}
+      `}
+            >
+              🧺 Most Items Saved
+            </button>
+
+            <button
+              onClick={() => setTab("money")}
+              className={`px-4 py-2 rounded-full text-sm font-semibold transition-all
+        ${tab === "money"
+                  ? "bg-green-600 text-white shadow-md"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"}
+      `}
+            >
+              💰 Most Money Saved
+            </button>
+          </div>
+
+          {/* Leaderboard */}
+          <div className="space-y-3">
+            {tab === "items" &&
+              leaderboardItems.map((u, i) => (
+                <LeaderboardCard key={u.id} user={u} index={i} />
+              ))
+            }
+
+            {tab === "money" &&
+              leaderboardMoney.map((u, i) => (
+                <LeaderboardCard key={u.id} user={u} index={i} />
+              ))
+            }
+          </div>
+        </div>
+
+      </div>
       <h3 className="text-lg font-semibold mt-6">My Friends</h3>
       <div className="space-y-2">
         {friends.length === 0 && (

@@ -14,6 +14,7 @@ export default function ItemPage({ params }) {
   const [user, setUser] = useState(null);
   const [countdown, setCountdown] = useState("00:00:00");
   const router = useRouter();
+  const [finish, setFinish] = useState(null);
 
   // Load user from localStorage
   useEffect(() => {
@@ -43,6 +44,16 @@ export default function ItemPage({ params }) {
 
     const created = new Date(item.createdAt);
     const deadline = created.getTime() + waitMs;
+    const deadlineDate = new Date(deadline);
+    const readable = deadlineDate.toLocaleString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit"
+    });
+
+    setFinish(readable);
 
     const interval = setInterval(() => {
       const now = Date.now();
@@ -103,19 +114,19 @@ export default function ItemPage({ params }) {
               <img src="/animations/melting.gif" className="w-40 h-40 opacity-80" />
             </div>
             <div className="mt-6 p-4 bg-gray-100 rounded-xl text-center shadow-inner">
-              <p className="text-gray-700 text-md">⏳ Time left to buy:</p>
+              <p className="text-gray-700 text-md">⏳ Countdown Ends:</p>
               <p className="text-3xl font-bold text-gray-900">{countdown}</p>
             </div>
             <p className={`font-semibold mb-1 ${item.status === 'stopped' ? 'text-green-500' : 'text-yellow-500'}`}>
               Status: {item.status}
             </p>
-            <p className="text-gray-500 mb-1">Time left to buy: {item.waitTime}</p>
+            <p className="text-gray-500 mb-1">Time left to buy: {finish}</p>
             <p className="text-gray-500 mb-1">Emotion: {item.emotion}</p>
             <a href={item.link} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">Go to product</a>
             <div className="flex">
               <Button className="bg-red-300 text-black" onClick={() => {
                 updateStatus("bought");
-                
+
               }}>
                 Mark as Bought
               </Button>

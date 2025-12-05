@@ -10,6 +10,7 @@ export default function Items() {
   const [items, setItems] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [user, setUser] = useState(null);
+  const [reload, setReload] = useState(0);
 
   // Load user from localStorage
   useEffect(() => {
@@ -24,7 +25,29 @@ export default function Items() {
       .then(res => res.json())
       .then(data => setItems(data.items || []))
       .catch(err => console.error(err));
-  }, [user]);
+
+
+  }, [user, reload]);
+
+  function getDeadline(waitTime, createdTime) {
+    const [d, h, m] = waitTime.split(':').map(Number);
+
+    // Convert to ms
+    const waitMs = (d * 24 * 60 + h * 60 + m) * 60 * 1000;
+
+    const created = new Date(createdTime);
+    const deadline = created.getTime() + waitMs;
+    const deadlineDate = new Date(deadline);
+    const readable = deadlineDate.toLocaleString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit"
+    });
+
+    return readable;
+  }
 
   // Handle adding new item
   const handleAddItem = async (e) => {
@@ -52,6 +75,14 @@ export default function Items() {
     if (res.ok) {
       setItems(prev => [...prev, data]);
       setShowModal(false);
+      setReload(prev => prev + 1);
+      const updatedUser = {
+        ...user,
+        items: [...user.items, data._id]
+      };
+
+      setUser(updatedUser);
+      localStorage.setItem("user", JSON.stringify(updatedUser));
       form.reset();
     } else {
       alert(data.error || 'Failed to add item');
@@ -71,15 +102,28 @@ export default function Items() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {items.map(item => (
           <Link key={item._id} href={`/items/${item._id}`}>
-            <Card className="flex items-center space-x-4 cursor-pointer">
+            <Card
+              className={`
+    flex items-center space-x-4 cursor-pointer p-4 rounded-xl shadow 
+    transition-all duration-300
+    ${item.status === "bought"
+                  ? "bg-red-100 hover:bg-red-200"
+                  : item.status === "waiting"
+                    ? "bg-yellow-100 hover:bg-yellow-200"
+                    : item.status === "stopped"
+                      ? "bg-green-100 hover:bg-green-200"
+                      : "bg-gray-100"
+                }
+  `}
+            >
               <img src={item.picture} alt={item.name} className="w-20 h-20 object-cover rounded-lg" />
               <div>
                 <h3 className="font-bold text-lg">{item.name}</h3>
                 <p className="text-gray-600">Price: ${item.price}</p>
-                <p className={`font-semibold ${item.status === 'bought' ? 'text-green-500' : 'text-yellow-500'}`}>
+                <p className={`font-semibold `}>
                   Status: {item.status}
                 </p>
-                <p className="text-sm text-gray-500">Time left: {item.waitTime}</p>
+                <p className="text-sm text-gray-500">Timer Ends: {getDeadline(item.waitTime, item.createdAt)}</p>
                 <p className="text-sm text-gray-500">Emotion: {item.emotion}</p>
               </div>
             </Card>
@@ -98,7 +142,7 @@ export default function Items() {
               <input type="number" name="price" placeholder="Price $" className="w-full border p-2 rounded" required />
               <input type="url" name="picture" placeholder="Item Image URL" className="w-full border p-2 rounded" />
               <input type="text" name="waitTime" placeholder="Time to wait (dd:hh:mm)" className="w-full border p-2 rounded" />
-            
+
 
               <div className="flex space-x-2">
                 {['Bored', 'Stressed', 'Excited', 'Routine', 'Not sure'].map(em => (

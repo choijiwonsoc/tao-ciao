@@ -1,6 +1,12 @@
-export default function Card({ children, ...props }) {
+export default function Card({ children, className = "", ...props }) {
   return (
-    <div {...props} className="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200">
+    <div
+      {...props}
+      className={`
+        p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200
+        ${className}
+      `}
+    >
       {children}
     </div>
   );

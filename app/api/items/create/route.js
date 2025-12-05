@@ -30,7 +30,7 @@ export async function POST(req) {
 
     // Add itemId to user's items array
     await users.updateOne(
-      { _id: new Object(userId) },
+      { _id: new ObjectId(userId) },
       { $push: { items: result.insertedId } }
     );
 
