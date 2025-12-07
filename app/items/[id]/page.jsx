@@ -77,7 +77,7 @@ export default function ItemPage({ params }) {
     return () => clearInterval(interval);
   }, [item]);
 
-  if (!item) return <p>Item not found</p>;
+  if (!item) return <p>Loading...</p>;
 
   const updateStatus = async (newStatus) => {
     try {
