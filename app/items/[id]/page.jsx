@@ -15,7 +15,6 @@ export default function ItemPage({ params }) {
   const [countdown, setCountdown] = useState("00:00:00");
   const router = useRouter();
   const [finish, setFinish] = useState(null);
-  const [loading, setLoading] = useState(false);
 
   // Load user from localStorage
   useEffect(() => {
@@ -24,16 +23,11 @@ export default function ItemPage({ params }) {
   }, []);
 
   useEffect(() => {
-    setLoading(true);
     async function fetchItem() {
       const res = await fetch(`/api/items/getOne?id=${id}`);
       const data = await res.json();
 
-      if (res.ok) {
-        setItem(data.item);
-        setLoading(false);
-
-      }
+      if (res.ok) setItem(data.item);
       else console.error(data.error);
     }
     fetchItem();
@@ -83,6 +77,8 @@ export default function ItemPage({ params }) {
     return () => clearInterval(interval);
   }, [item]);
 
+  if (!item) return <p>Item not found</p>;
+
   const updateStatus = async (newStatus) => {
     try {
       const res = await fetch("/api/items/update-status", {
@@ -108,7 +104,7 @@ export default function ItemPage({ params }) {
 
   return (
     <div className="space-y-6 max-w-2xl">
-      {!loading ? <Card className="p-4 sm:p-6 space-y-6">
+      <Card className="p-4 sm:p-6 space-y-6">
 
         {/* Image Section */}
         <div className="w-full flex justify-center">
@@ -182,7 +178,7 @@ export default function ItemPage({ params }) {
             Forgo Purchase
           </Button>
         </div>
-      </Card> : <p>Loading details...</p>}
+      </Card>
 
     </div>
   );
