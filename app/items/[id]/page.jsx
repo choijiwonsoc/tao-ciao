@@ -104,44 +104,82 @@ export default function ItemPage({ params }) {
 
   return (
     <div className="space-y-6 max-w-2xl">
-      <Card>
-        <div className="flex flex-col sm:flex-row sm:space-x-6">
-          <img src={item.img} alt={item.name} className="w-full sm:w-64 h-64 object-cover rounded-lg" />
-          <div className="mt-4 sm:mt-0">
-            <h2 className="text-2xl font-bold mb-2">{item.name}</h2>
-            <p className="text-gray-600 mb-1">Price: ${item.price}</p>
-            <div className=" justify-center items-center">
-              <img src="/animations/melting.gif" className="w-40 h-40 opacity-80" />
-            </div>
-            <div className="mt-6 p-4 bg-gray-100 rounded-xl text-center shadow-inner">
-              <p className="text-gray-700 text-md">⏳ Countdown Ends:</p>
-              <p className="text-3xl font-bold text-gray-900">{countdown}</p>
-            </div>
-            <p className={`font-semibold mb-1 ${item.status === 'stopped' ? 'text-green-500' : 'text-yellow-500'}`}>
-              Status: {item.status}
-            </p>
-            <p className="text-gray-500 mb-1">Time left to buy: {finish}</p>
-            <p className="text-gray-500 mb-1">Emotion: {item.emotion}</p>
-            <a href={item.link} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">Go to product</a>
-            <div className="flex">
-              <Button className="bg-red-300 text-black" onClick={() => {
-                updateStatus("bought");
+      <Card className="p-4 sm:p-6 space-y-6">
 
-              }}>
-                Mark as Bought
-              </Button>
+        {/* Image Section */}
+        <div className="w-full flex justify-center">
+          <div className="relative w-full max-w-xs sm:max-w-sm">
+            <img
+              src={item.picture ? item.picture : "/cart.png"}
+              alt={item.name}
+              className="w-full h-56 sm:h-64 object-cover rounded-xl shadow-md"
+            />
 
-              <Button
-                className="bg-green-300 text-black"
-                onClick={() => updateStatus("stopped")}
-              >
-                Forgo Purchase
-              </Button>
-            </div>
+            {/* Optional overlay label */}
+            <span className="absolute bottom-2 right-2 text-xs bg-black/60 text-white px-2 py-1 rounded">
+              {item.category || "Item"}
+            </span>
           </div>
         </div>
 
+        {/* Item Information */}
+        <div className="space-y-2 text-center sm:text-left">
+          <h2 className="text-2xl sm:text-3xl font-bold">{item.name}</h2>
+          <p className="text-gray-700 text-lg">${item.price}</p>
+
+          {/* Melting Animation */}
+          <div className="flex justify-center my-4">
+            <img src="/animations/melting.gif" className="w-32 sm:w-40 opacity-80" />
+          </div>
+        </div>
+
+        {/* Countdown */}
+        <div className="bg-gray-100 rounded-xl p-4 sm:p-5 shadow-inner text-center">
+          <p className="text-gray-700 text-sm sm:text-md">⏳ Countdown Ends</p>
+          <p className="text-3xl sm:text-4xl font-bold mt-1">{countdown}</p>
+        </div>
+
+        {/* Item Details */}
+        <div className="space-y-1 text-center sm:text-left">
+          <p className={`font-semibold ${item.status === 'stopped' ? 'text-green-600' : 'text-yellow-500'}`}>
+            Status: {item.status}
+          </p>
+
+          <p className="text-gray-600">Time left to buy: {finish}</p>
+          <p className="text-gray-600">Emotion: {item.emotion}</p>
+          <p className="text-gray-600">Time of Impulse: {item.timeOfImpulse}</p>
+          <p className="text-gray-600 mb-2">Category: {item.category}</p>
+
+          {item.link && (
+            <a
+              href={item.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:underline"
+            >
+              View Product →
+            </a>
+          )}
+        </div>
+
+        {/* Buttons */}
+        <div className="flex flex-col sm:flex-row gap-3 mt-6">
+          <Button
+            className="bg-red-400 hover:bg-red-500 text-black w-full"
+            onClick={() => updateStatus("bought")}
+          >
+            Mark as Bought
+          </Button>
+
+          <Button
+            className="bg-green-400 hover:bg-green-500 text-black w-full"
+            onClick={() => updateStatus("stopped")}
+          >
+            Forgo Purchase
+          </Button>
+        </div>
       </Card>
+
     </div>
   );
 }

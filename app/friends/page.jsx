@@ -14,6 +14,7 @@ export default function Friends() {
   const [tab, setTab] = useState("items");
   const [leaderboardMoney, setLeaderboardMoney] = useState([]);
   const [leaderboardItems, setLeaderboardItems] = useState([]);
+  const [loading, setLoading] = useState(false);
 
 
   const [selectedUser, setSelectedUser] = useState(null); // popup user
@@ -62,6 +63,7 @@ export default function Friends() {
     if (stored) {
       const u = JSON.parse(stored);
       setUser(u);
+      console.log(u);
 
       const loadFriendsAndLeaderboard = async () => {
         let friendList = [];
@@ -69,18 +71,18 @@ export default function Friends() {
         if (u.friends && u.friends.length > 0) {
           const res = await fetch(`/api/users/bulk?ids=${u.friends.join(',')}`);
           const data = await res.json();
-          friendList = data.users;
+          friendList = Array.isArray(data.users) ? data.users : [];
           setFriends(friendList);
         }
 
         // Combine me + friends
         const allUsers = [u, ...friendList];
         console.log(allUsers);
+        setLoading(true);
 
         const leaderboardData = await Promise.all(
           allUsers.map(async (user) => {
             // user.items = [ObjectId, ObjectId, …]
-
             // 1. fetch all items in parallel
             const fetchedItems = await Promise.all(
               (user.items || []).map(async (itemId) => {
@@ -102,6 +104,7 @@ export default function Friends() {
             };
           })
         );
+        setLoading(false);
 
         // Sort & take top 5
         setLeaderboardItems(
@@ -226,7 +229,7 @@ export default function Friends() {
           </div>
 
           {/* Leaderboard */}
-          <div className="space-y-3">
+          {!loading ? (<div className="space-y-3">
             {tab === "items" &&
               leaderboardItems.map((u, i) => (
                 <LeaderboardCard key={u.id} user={u} index={i} />
@@ -238,7 +241,9 @@ export default function Friends() {
                 <LeaderboardCard key={u.id} user={u} index={i} />
               ))
             }
-          </div>
+          </div>) : (
+            <div className="space-y-3">Loading leaderboard...</div>
+          )}
         </div>
 
       </div>
@@ -285,9 +290,16 @@ export default function Friends() {
                 Cancel
               </Button>
 
-              <Button onClick={() => addFriend(selectedUser._id)}>
-                Add Friend
-              </Button>
+              {user?.friends?.includes(selectedUser._id) ? (
+                <Link href={`/friends/${selectedUser._id}`}>
+                  <Button>Visit Profile</Button>
+                </Link>
+              ) : (
+                <Button onClick={() => addFriend(selectedUser._id)}>
+                  Add Friend
+                </Button>
+              )}
+
             </div>
           </div>
         </div>

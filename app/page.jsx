@@ -74,9 +74,10 @@ const router = useRouter(); // Add this
   // }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4" style={{ backgroundImage: "url('/shopping_wallpaper.avif')" }}>
       <div className="bg-white shadow-lg rounded-xl p-8 w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-6 text-center">{isLogin ? 'Login' : 'Sign Up'}</h2>
+        <h1 className="text-2xl font-bold mb-6 text-center">Welcome to TaoCiao</h1>
+        <h2 className="text-xl font-bold mb-6 text-center">{isLogin ? 'Login' : 'Sign Up'}</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
             type="text"

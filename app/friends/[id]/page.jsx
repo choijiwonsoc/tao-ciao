@@ -54,14 +54,14 @@ export default function FriendItems({ params }) {
                     <Link key={item._id} href={`/friends/${friend_eye}/${item._id}`}>
                     <Card key={item._id} className="flex items-center space-x-4 cursor-pointer">
                         <img
-                            src={item.picture}
+                            src={item.picture?item.picture:"/cart.png"}
                             alt={item.name}
                             className="w-20 h-20 object-cover rounded-lg"
                         />
                         <div>
                             <h3 className="font-bold text-lg">{item.name}</h3>
                             <p className="text-gray-600">Price: ${item.price}</p>
-                            <p className={`font-semibold ${item.status === 'bought' ? 'text-green-500' : 'text-yellow-500'
+                            <p className={`font-semibold ${item.status === 'bought' ? 'text-red-500' : (item.status === 'stopped' ? 'text-green-500':'text-yellow-500')
                                 }`}>
                                 Status: {item.status}
                             </p>

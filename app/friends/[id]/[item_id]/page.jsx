@@ -57,7 +57,7 @@ export default function FriendItemPage({ params }) {
     if (res.ok) {
       setItem(prev => ({
         ...prev,
-        comments: [...prev.comments, data.comment]
+         comments: [...(prev.comments || []), data.comment]
       }));
       setComment('');
     } else {
@@ -77,7 +77,7 @@ export default function FriendItemPage({ params }) {
       <Card>
         <div className="flex flex-col sm:flex-row sm:space-x-6">
           <img
-            src={item.picture}
+            src={item.picture?item.picture:"/cart.png"}
             alt={item.name}
             className="w-full sm:w-64 h-64 object-cover rounded-lg"
           />
@@ -85,7 +85,7 @@ export default function FriendItemPage({ params }) {
             <h2 className="text-2xl font-bold mb-2">{item.name}</h2>
             <p className="text-gray-600 mb-1">Price: ${item.price}</p>
             <p className={`font-semibold mb-1 ${
-              item.status === 'bought' ? 'text-green-500' : 'text-yellow-500'
+              item.status === 'bought' ? 'text-red-500' : (item.status === 'stopped' ? 'text-green-500':'text-yellow-500')
             }`}>
               Status: {item.status}
             </p>

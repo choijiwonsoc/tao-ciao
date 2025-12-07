@@ -11,6 +11,7 @@ export default function Items() {
   const [showModal, setShowModal] = useState(false);
   const [user, setUser] = useState(null);
   const [reload, setReload] = useState(0);
+  const [loading, setLoading] = useState(false);
 
   // Load user from localStorage
   useEffect(() => {
@@ -20,16 +21,22 @@ export default function Items() {
 
   // Fetch items when user is loaded
   useEffect(() => {
+    setLoading(true);
     if (!user) return;
     fetch(`/api/items/getItems?userId=${user._id}`)
       .then(res => res.json())
       .then(data => setItems(data.items || []))
-      .catch(err => console.error(err));
+      .catch(err => console.error(err))
+      .finally(() => setLoading(false));
 
 
   }, [user, reload]);
 
   function getDeadline(waitTime, createdTime) {
+    console.log(waitTime);
+    if (waitTime == undefined) {
+      return;
+    }
     const [d, h, m] = waitTime.split(':').map(Number);
 
     // Convert to ms
@@ -49,25 +56,52 @@ export default function Items() {
     return readable;
   }
 
+  function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = (error) => reject(error);
+      reader.readAsDataURL(file);
+    });
+  }
+
   // Handle adding new item
   const handleAddItem = async (e) => {
     e.preventDefault();
     const form = e.target;
 
+
     const name = form.name.value;
     const price = parseFloat(form.price.value);
     const link = form.link.value;
-    const picture = form.picture.value; // For simplicity, assume URL
+    let base64Image = "";
+    if (form.picture.files[0]) {
+      base64Image = await fileToBase64(form.picture.files[0]);
+    }
     const status = 'waiting';
     const waitTime = form.waitTime.value;
     const emotion = Array.from(form.emotion)
+
       .filter(i => i.checked)
       .map(i => i.value)
       .join(',') || 'Not sure';
+    const category = form.category.value;
+    const timeOfImpulse = form.timeOfImpulse.value;
 
     const res = await fetch('/api/items/create', {
       method: 'POST',
-      body: JSON.stringify({ userId: user._id, name, price, link, picture, status, waitTime, emotion }),
+      body: JSON.stringify({
+        userId: user._id,
+        name,
+        picture: base64Image,
+        link,
+        price,
+        status: "waiting",
+        waitTime,
+        emotion,
+        category,
+        timeOfImpulse
+      }),
       headers: { 'Content-Type': 'application/json' }
     });
 
@@ -99,7 +133,7 @@ export default function Items() {
       </div>
 
       {/* Items grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      {!loading?<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {items.map(item => (
           <Link key={item._id} href={`/items/${item._id}`}>
             <Card
@@ -116,7 +150,7 @@ export default function Items() {
                 }
   `}
             >
-              <img src={item.picture} alt={item.name} className="w-20 h-20 object-cover rounded-lg" />
+              <img src={item.picture ? item.picture : "cart.png"} alt={item.name} className="w-20 h-20 object-cover rounded-lg" />
               <div>
                 <h3 className="font-bold text-lg">{item.name}</h3>
                 <p className="text-gray-600">Price: ${item.price}</p>
@@ -129,7 +163,7 @@ export default function Items() {
             </Card>
           </Link>
         ))}
-      </div>
+      </div>:<p>Loading items...</p>}
 
       {/* Add Item Modal */}
       {showModal && (
@@ -140,10 +174,25 @@ export default function Items() {
               <input type="text" name="name" placeholder="Item Name" className="w-full border p-2 rounded" required />
               <input type="url" name="link" placeholder="Item Link" className="w-full border p-2 rounded" />
               <input type="number" name="price" placeholder="Price $" className="w-full border p-2 rounded" required />
-              <input type="url" name="picture" placeholder="Item Image URL" className="w-full border p-2 rounded" />
-              <input type="text" name="waitTime" placeholder="Time to wait (dd:hh:mm)" className="w-full border p-2 rounded" />
+              <input type="file" name="picture" accept="image/*" className="w-full border p-2 rounded" />
+              <input type="text" name="waitTime" placeholder="Time to wait (dd:hh:mm)" className="w-full border p-2 rounded" required />
 
 
+              <select name="category" className="w-full border p-2 rounded" required>
+                <option value="Clothing">Clothing</option>
+                <option value="Tech">Tech</option>
+                <option value="Skincare">Skincare</option>
+                <option value="Food">Food</option>
+                <option value="Accessories">Accessories</option>
+                <option value="Others">Others</option>
+              </select>
+
+              {/* Time of Impulse */}
+              <select name="timeOfImpulse" className="w-full border p-2 rounded" required>
+                <option value="Morning">Morning</option>
+                <option value="Afternoon">Afternoon</option>
+                <option value="Night">Night</option>
+              </select>
               <div className="flex space-x-2">
                 {['Bored', 'Stressed', 'Excited', 'Routine', 'Not sure'].map(em => (
                   <label key={em} className="flex items-center space-x-1">
@@ -161,5 +210,6 @@ export default function Items() {
         </div>
       )}
     </div>
+
   );
 }

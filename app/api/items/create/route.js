@@ -2,7 +2,7 @@ import clientPromise from '../../../../lib/mongodb';
 
 export async function POST(req) {
   try {
-    const { userId, name, picture, link, price, status, waitTime, emotion } = await req.json();
+    const { userId, name, picture, link, price, status, waitTime, emotion, category, timeOfImpulse } = await req.json();
 
     if (!userId || !name) {
       return new Response(JSON.stringify({ error: 'Missing required fields' }), { status: 400 });
@@ -25,6 +25,8 @@ export async function POST(req) {
       status: 'waiting', // default
       waitTime: waitTime || '0:0:0',
       emotion: emotion || 'not sure',
+      category,
+      timeOfImpulse,
       createdAt: new Date()
     });
 
