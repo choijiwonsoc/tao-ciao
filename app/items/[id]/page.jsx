@@ -128,16 +128,16 @@ export default function ItemPage({ params }) {
           <p className="text-gray-700 text-lg">${item.price}</p>
 
           {/* Melting Animation */}
-          <div className="flex justify-center my-4">
+          {item.status=="waiting"?<div className="flex justify-center my-4">
             <img src="/animations/melting.gif" className="w-32 sm:w-40 opacity-80" />
-          </div>
+          </div>:<p>Item purchase has already been {item.status}</p>}
         </div>
 
         {/* Countdown */}
-        <div className="bg-gray-100 rounded-xl p-4 sm:p-5 shadow-inner text-center">
+        {item.status=="waiting"?<div className="bg-gray-100 rounded-xl p-4 sm:p-5 shadow-inner text-center">
           <p className="text-gray-700 text-sm sm:text-md">⏳ Countdown Ends</p>
           <p className="text-3xl sm:text-4xl font-bold mt-1">{countdown}</p>
-        </div>
+        </div>:<div></div>}
 
         {/* Item Details */}
         <div className="space-y-1 text-center sm:text-left">
