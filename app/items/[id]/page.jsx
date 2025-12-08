@@ -162,6 +162,17 @@ export default function ItemPage({ params }) {
           )}
         </div>
 
+        {item.comments?.length > 0 ? (
+          item.comments.map((c, i) => (
+            <div key={i} className="mb-2 border-b pb-2">
+              <p className="font-semibold">{c.authorName}</p>
+              <p className="text-gray-600 text-sm">{c.text}</p>
+            </div>
+          ))
+        ) : (
+          <p className="text-gray-500">No comments yet.</p>
+        )}
+
         {/* Buttons */}
         <div className="flex flex-col sm:flex-row gap-3 mt-6">
           <Button
