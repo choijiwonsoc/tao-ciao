@@ -15,6 +15,7 @@ export default function Friends() {
   const [leaderboardMoney, setLeaderboardMoney] = useState([]);
   const [leaderboardItems, setLeaderboardItems] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [reload, setReload] = useState(0);
 
 
   const [selectedUser, setSelectedUser] = useState(null); // popup user
@@ -122,7 +123,7 @@ export default function Friends() {
 
       loadFriendsAndLeaderboard();
     }
-  }, []);
+  }, [reload]);
 
   // Live search for users
   useEffect(() => {
@@ -165,6 +166,7 @@ export default function Friends() {
 
     setSelectedUser(null); // close modal
     setShowModal(false);
+    setReload(prev=>prev+1);
 
   };
 
