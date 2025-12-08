@@ -60,43 +60,58 @@ export default function Friends() {
 
   // Load logged-in user
   useEffect(() => {
-    const stored = localStorage.getItem('user');
-    if (stored) {
-      const u = JSON.parse(stored);
-      setUser(u);
-      console.log(u);
+    const loadUserAndData = async () => {
+      const stored = localStorage.getItem("user");
+      if (!stored) return;
 
+      let u = JSON.parse(stored);
+
+      // Fetch updated user
+      try {
+        const res = await fetch(`/api/users/getUser?id=${u._id}`);
+        const data = await res.json();
+        u = data.user;
+        setUser(u);
+
+        console.log("Updated user:", u);
+        console.log("Friends:", u.friends);
+      } catch (err) {
+        console.error("Failed to fetch user", err);
+        return;
+      }
+
+      // Load friends + leaderboard
       const loadFriendsAndLeaderboard = async () => {
         let friendList = [];
 
-        if (u.friends && u.friends.length > 0) {
-          const res = await fetch(`/api/users/bulk?ids=${u.friends.join(',')}`);
-          const data = await res.json();
-          friendList = Array.isArray(data.users) ? data.users : [];
-          setFriends(friendList);
+        try {
+          if (u.friends?.length > 0) {
+            const res = await fetch(`/api/users/bulk?ids=${u.friends.join(",")}`);
+            const data = await res.json();
+            friendList = Array.isArray(data.users) ? data.users : [];
+            setFriends(friendList);
+          }
+        } catch (err) {
+          console.error("Failed to load friends", err);
         }
 
-        // Combine me + friends
         const allUsers = [u, ...friendList];
-        console.log(allUsers);
+
         setLoading(true);
 
+        // leaderboard
         const leaderboardData = await Promise.all(
           allUsers.map(async (user) => {
-            // user.items = [ObjectId, ObjectId, …]
-            // 1. fetch all items in parallel
             const fetchedItems = await Promise.all(
               (user.items || []).map(async (itemId) => {
                 const res = await fetch(`/api/items/getOne?id=${itemId}`);
                 const data = await res.json();
-                return data.item; // return the item object
+                return data.item;
               })
             );
-            console.log(fetchedItems);
 
-            // 2. filter stopped items
             const stoppedItems = fetchedItems.filter(i => i?.status === "stopped");
-            // 3. compute metrics
+
             return {
               id: user._id,
               name: user.name || user.username,
@@ -105,25 +120,24 @@ export default function Friends() {
             };
           })
         );
+
         setLoading(false);
 
-        // Sort & take top 5
         setLeaderboardItems(
-          [...leaderboardData]
-            .sort((a, b) => b.itemsStoppedCount - a.itemsStoppedCount)
-            .slice(0, 5)
+          leaderboardData.sort((a, b) => b.itemsStoppedCount - a.itemsStoppedCount).slice(0, 5)
         );
 
         setLeaderboardMoney(
-          [...leaderboardData]
-            .sort((a, b) => b.moneySaved - a.moneySaved)
-            .slice(0, 5)
+          leaderboardData.sort((a, b) => b.moneySaved - a.moneySaved).slice(0, 5)
         );
       };
 
-      loadFriendsAndLeaderboard();
-    }
+      await loadFriendsAndLeaderboard();
+    };
+
+    loadUserAndData();
   }, [reload]);
+
 
   // Live search for users
   useEffect(() => {
@@ -143,6 +157,7 @@ export default function Friends() {
   }, [search]);
 
   const addFriend = async (friendId) => {
+    console.log(user.username);
     const res = await fetch('/api/users/add-friend', {
       method: 'POST',
       body: JSON.stringify({ userId: user._id, friendId }),
@@ -156,17 +171,21 @@ export default function Friends() {
     }
 
     // Update UI friend list locally
-    const updatedFriends = [...friends, data.friend];
-    setFriends(updatedFriends);
+    console.log(data.friend);
 
     // Update localStorage user
-    const updatedUser = { ...user, friends: updatedFriends };
+    const updatedUser = {
+      ...user,
+      friends: [...user.friends, data.friend]
+    };
+    console.log(updatedUser);
+    //const updatedUser = { ...user, friends: updatedFriends };
     setUser(updatedUser);
     localStorage.setItem('user', JSON.stringify(updatedUser));
 
     setSelectedUser(null); // close modal
     setShowModal(false);
-    setReload(prev=>prev+1);
+    setReload(prev => prev + 1);
 
   };
 
@@ -202,6 +221,7 @@ export default function Friends() {
       )}
 
       {/* FRIENDS LIST */}
+      <Button onClick={() => setReload(prev => prev + 1)}>Refresh</Button>
       <h3 className="text-lg font-semibold mt-6">Leaderboard</h3>
       <div>
         <div className="mt-6 w-full">

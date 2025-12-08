@@ -15,7 +15,7 @@ export async function POST(req) {
     await users.updateOne({ _id: new ObjectId(friendId) }, { $addToSet: { friends: new ObjectId(userId) } });
 
     const friend = await users.findOne({ _id: new ObjectId(friendId) });
-    return new Response(JSON.stringify({ friend:friend  }), { status: 200 });
+    return new Response(JSON.stringify({ friend:friend._id  }), { status: 200 });
   } catch (err) {
     return new Response(JSON.stringify({ error: err.message }), { status: 500 });
   }
