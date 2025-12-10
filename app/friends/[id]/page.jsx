@@ -52,7 +52,7 @@ export default function FriendItems({ params }) {
 
                 {items.map(item => (
                     <Link key={item._id} href={`/friends/${friend_eye}/${item._id}`}>
-                    <Card key={item._id} className="flex items-center space-x-4 cursor-pointer">
+                    <Card key={item._id} className="flex items-center space-x-4 cursor-pointer bg-white">
                         <img
                             src={item.picture?item.picture:"/cart.png"}
                             alt={item.name}

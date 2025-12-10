@@ -5,7 +5,6 @@ import "swiper/css";
 import "swiper/css/pagination";
 import "swiper/css/navigation";
 
-
 import { useEffect, useState } from "react";
 import ItemCard from "./ItemCard";
 import { useSearchParams } from "next/navigation";
@@ -23,7 +22,7 @@ export default function ItemsSwiper() {
   const router = useRouter();
   const [reload, setReload] = useState(0);
 
-  const [initialSlide, setInitialSlide] = useState(0);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
     const stored = localStorage.getItem("user");
@@ -44,6 +43,15 @@ export default function ItemsSwiper() {
   }, []);
 
   if (items.length === 0) return <p>No items yet.</p>;
+
+  const prevItem = () => {
+    setCurrentIndex((i) => (i === 0 ? items.length - 1 : i - 1));
+  };
+
+  // Move to next item
+  const nextItem = () => {
+    setCurrentIndex((i) => (i === items.length - 1 ? 0 : i + 1));
+  };
 
   function fileToBase64(file) {
     return new Promise((resolve, reject) => {
@@ -108,118 +116,158 @@ export default function ItemsSwiper() {
       localStorage.setItem("user", JSON.stringify(updatedUser));
       form.reset();
 
-      const latest = items[items.length - 1]._id;
-      router.push(`/items/swipe?start=${latest}`);
+      router.push(`/items/swipe?start=${data.itemId}`);
     } else {
       alert(data.error || "Failed to add item");
     }
   };
 
   return (
-    <div className="relative w-screen h-screen overflow-hidden">
-      <Swiper
-        initialSlide={initialSlide}
-        spaceBetween={30}
-        slidesPerView={1}
-        className="w-screen h-screen overflow-hidden"
-      >
-        {items.map((item) => (
-          <SwiperSlide key={item._id} className="!w-screen overflow-hidden flex justify-center">
-            <ItemCard item={item} />
-          </SwiperSlide>
-        ))}
-      </Swiper>
-
+    <div className="relative w-screen flex flex-col items-center justify-center ">
       {/* Floating Add Button */}
       <Button
         onClick={() => setShowModal(true)}
-        className="fixed top-6 right-6 bg-blue-500 text-white p-4 rounded-full shadow-xl"
+        className="fixed z-50 top-5 right-5 bg-gradient-to-r from-blue-500 to-purple-500 text-white 
+                 p-4 rounded-full shadow-xl flex items-center gap-2 backdrop-blur-md"
       >
         <HiPlus className="w-5 h-5" /> <span>Add Item</span>
       </Button>
 
+      {/* LEFT BUTTON */}
+      <button
+        onClick={prevItem}
+        className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 p-3 rounded-full shadow-lg"
+      >
+        ◀
+      </button>
+
+      {/* CURRENT ITEM */}
+      <div className="w-full max-w-xl">
+        <ItemCard item={items[currentIndex]} />
+      </div>
+
+      {/* RIGHT BUTTON */}
+      <button
+        onClick={nextItem}
+        className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 p-3 rounded-full shadow-lg"
+      >
+        ▶
+      </button>
       {showModal && (
-        <div className="fixed inset-0 bg-black/30 flex justify-center items-center z-50">
-          <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
-            <h2 className="text-xl font-bold mb-4">Add New Item</h2>
-            <form className="space-y-4" onSubmit={handleAddItem}>
-              <input
-                type="text"
-                name="name"
-                placeholder="Item Name"
-                className="w-full border p-2 rounded"
-                required
-              />
-              <input
-                type="url"
-                name="link"
-                placeholder="Item Link"
-                className="w-full border p-2 rounded"
-              />
-              <input
-                type="number"
-                name="price"
-                placeholder="Price $"
-                className="w-full border p-2 rounded"
-                required
-              />
-              <input
-                type="file"
-                name="picture"
-                accept="image/*"
-                className="w-full border p-2 rounded"
-              />
-              <input
-                type="text"
-                name="waitTime"
-                placeholder="Time to wait (dd:hh:mm)"
-                className="w-full border p-2 rounded"
-                required
-              />
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+          {/* Dim background */}
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={() => setShowModal(false)}
+          />
 
-              <select
-                name="category"
-                className="w-full border p-2 rounded"
-                required
-              >
-                <option value="Clothing">Clothing</option>
-                <option value="Tech">Tech</option>
-                <option value="Skincare">Skincare</option>
-                <option value="Food">Food</option>
-                <option value="Accessories">Accessories</option>
-                <option value="Others">Others</option>
-              </select>
+          {/* Modal container */}
+          <div
+            className="
+      relative w-full max-w-md 
+      bg-white/90 backdrop-blur-xl 
+      rounded-3xl shadow-2xl 
+      p-6 space-y-5 animate-[fadeIn_0.2s_ease-out]
+    "
+          >
+            <h2 className="text-2xl font-bold text-gray-900 text-center">
+              Add Item
+            </h2>
 
-              {/* Time of Impulse */}
-              <select
-                name="timeOfImpulse"
-                className="w-full border p-2 rounded"
-                required
-              >
-                <option value="Morning">Morning</option>
-                <option value="Afternoon">Afternoon</option>
-                <option value="Night">Night</option>
-              </select>
-              <div className="flex space-x-2">
-                {["Bored", "Stressed", "Excited", "Routine", "Not sure"].map(
-                  (em) => (
-                    <label key={em} className="flex items-center space-x-1">
-                      <input type="checkbox" name="emotion" value={em} />{" "}
-                      <span>{em}</span>
-                    </label>
-                  )
-                )}
+            <form className="space-y-5" onSubmit={handleAddItem}>
+              {/* Inputs */}
+              <div className="space-y-3">
+                <input
+                  name="name"
+                  placeholder="Item Name"
+                  required
+                  className="native-input"
+                />
+                <input
+                  type="url"
+                  name="link"
+                  placeholder="Product Link"
+                  className="native-input"
+                />
+                <input
+                  type="number"
+                  name="price"
+                  placeholder="Price $"
+                  required
+                  className="native-input"
+                />
+                <input
+                  type="file"
+                  name="picture"
+                  accept="image/*"
+                  className="native-input"
+                />
+                <input
+                  name="waitTime"
+                  placeholder="Wait Time (dd:hh:mm)"
+                  required
+                  className="native-input"
+                />
+
+                <select name="category" className="native-input" required>
+                  <option value="Clothing">Clothing</option>
+                  <option value="Tech">Tech</option>
+                  <option value="Skincare">Skincare</option>
+                  <option value="Food">Food</option>
+                  <option value="Accessories">Accessories</option>
+                  <option value="Others">Others</option>
+                </select>
+
+                <select name="timeOfImpulse" className="native-input" required>
+                  <option value="Morning">Morning</option>
+                  <option value="Afternoon">Afternoon</option>
+                  <option value="Night">Night</option>
+                </select>
               </div>
 
-              <div className="flex justify-end space-x-2">
-                <Button
+              {/* Emotion Pills */}
+              <div className="space-y-2">
+                <p className="text-gray-800 font-medium text-sm">Emotion</p>
+                <div className="flex flex-wrap gap-2">
+                  {["Bored", "Stressed", "Excited", "Routine", "Not sure"].map(
+                    (em) => (
+                      <label
+                        key={em}
+                        className="
+                flex items-center px-3 py-1.5 rounded-full 
+                bg-gray-200/60 text-gray-900 text-sm 
+                shadow-inner active:scale-95
+              "
+                      >
+                        <input
+                          type="checkbox"
+                          name="emotion"
+                          value={em}
+                          className="mr-1"
+                        />
+                        {em}
+                      </label>
+                    )
+                  )}
+                </div>
+              </div>
+
+              {/* Buttons */}
+              <div className="flex gap-3 pt-2">
+                <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="bg-gray-300 text-black"
+                  className="w-1/2 py-3 rounded-xl bg-gray-200 text-gray-800 font-semibold active:scale-[0.98]"
                 >
                   Cancel
-                </Button>
-                <Button type="submit">Add</Button>
+                </button>
+
+                <button
+                  type="submit"
+                  className="w-1/2 py-3 rounded-xl bg-gradient-to-r from-pink-500 to-orange-400 text-white font-semibold shadow-lg active:scale-[0.98]"
+                >
+                  Add
+                </button>
               </div>
             </form>
           </div>

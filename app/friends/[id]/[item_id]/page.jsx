@@ -104,7 +104,7 @@ export default function FriendItemPage({ params }) {
       </Card>
 
       {/* Comments Section */}
-      <Card className="p-4">
+      <Card className="p-4 bg-white">
         <h2 className="font-bold mb-2">Comments</h2>
 
         {/* Existing comments */}
