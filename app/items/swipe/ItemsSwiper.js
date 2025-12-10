@@ -30,15 +30,15 @@ export default function ItemsSwiper() {
     fetch(`/api/items/getItems?userId=${u._id}`)
       .then((res) => res.json())
       .then((data) => {
-        const items = data.items || [];
-        setItems(items);
+        const list = data.items || [];
+        setItems(list);
 
-        const index = items.findIndex((i) => i._id === startId);
-        setInitialSlide(index >= 0 ? index : 0);
+        const index = list.findIndex(i => i._id === startId);
+        setCurrentIndex(index >= 0 ? index : 0);
       });
   }, []);
 
-  if (items.length === 0) return <p>No items yet.</p>;
+  if (items.length === 0) return <p>Loading...</p>;
 
   const prevItem = () => {
     setCurrentIndex((i) => (i === 0 ? items.length - 1 : i - 1));
@@ -112,14 +112,14 @@ export default function ItemsSwiper() {
       localStorage.setItem("user", JSON.stringify(updatedUser));
       form.reset();
 
-      router.push(`/items/swipe?start=${data.itemId}`);
+      router.push('/items');
     } else {
       alert(data.error || "Failed to add item");
     }
   };
 
   return (
-    <div className="relative w-screen flex flex-col items-center justify-center ">
+    <div className="flex flex-col items-center justify-center ">
       {/* Floating Add Button */}
       <Button
         onClick={() => setShowModal(true)}
