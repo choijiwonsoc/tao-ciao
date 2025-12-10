@@ -12,7 +12,7 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body className="bg-gray-50 flex min-h-screen">
         {showNavbar && <Navbar />}
-        <main className={`flex-1 p-4 ${showNavbar ? '' : ''}`}>{children}</main>
+        <main className={`flex-1 p-4 bg-[#DFF3FF] ${showNavbar ? '' : ''}`}>{children}</main>
       </body>
     </html>
   );

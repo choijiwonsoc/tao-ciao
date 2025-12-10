@@ -141,8 +141,8 @@ export default function Dashboard() {
     return (
         !loading ? (<div className="space-y-6">
             <h2 className="text-xl font-bold mb-2">Welcome, {user.username}</h2>
-            <Card>
-                <Card>
+            <Card className="bg-white">
+                <Card className="bg-white">
                     <h2 className="text-xl font-bold mb-2">Daily Streak</h2>
                     <p className="text-gray-600 mb-4">{stats.streak} days</p>
 

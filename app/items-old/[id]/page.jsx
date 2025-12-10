@@ -101,96 +101,98 @@ export default function ItemPage({ params }) {
     }
   };
 
-
   return (
-    <div className="space-y-6 max-w-2xl">
-      <Card className="p-4 sm:p-6 space-y-6">
+    <div
+      className="min-h-screen w-full flex justify-center items-center bg-cover bg-center bg-no-repeat p-4"
+      style={{ backgroundImage: "url('/animations/melting.gif')" }}
+    >
+      <Card className="p-6 sm:p-8 w-full max-w-xl bg-white/30 backdrop-blur-lg shadow-2xl rounded-2xl border border-white/40">
 
-        {/* Image Section */}
+        {/* IMAGE */}
         <div className="w-full flex justify-center">
-          <div className="relative w-full max-w-xs sm:max-w-sm">
+          <div className="relative w-full max-w-sm">
             <img
               src={item.picture ? item.picture : "/cart.png"}
               alt={item.name}
-              className="w-full h-56 sm:h-64 object-cover rounded-xl shadow-md"
+              className="w-full h-56 sm:h-64 object-cover rounded-xl shadow-lg"
             />
 
-            {/* Optional overlay label */}
             <span className="absolute bottom-2 right-2 text-xs bg-black/60 text-white px-2 py-1 rounded">
               {item.category || "Item"}
             </span>
           </div>
         </div>
 
-        {/* Item Information */}
-        <div className="space-y-2 text-center sm:text-left">
-          <h2 className="text-2xl sm:text-3xl font-bold">{item.name}</h2>
-          <p className="text-gray-700 text-lg">${item.price}</p>
-
-          {/* Melting Animation */}
-          {item.status=="waiting"?<div className="flex justify-center my-4">
-            <img src="/animations/melting.gif" className="w-32 sm:w-40 opacity-80" />
-          </div>:<p>Item purchase has already been {item.status}</p>}
+        {/* ITEM NAME */}
+        <div className="mt-6 text-center space-y-2">
+          <h2 className="text-3xl font-bold text-white drop-shadow-lg">{item.name}</h2>
+          <p className="text-xl font-semibold text-white/90">${item.price}</p>
         </div>
 
-        {/* Countdown */}
-        {item.status=="waiting"?<div className="bg-gray-100 rounded-xl p-4 sm:p-5 shadow-inner text-center">
-          <p className="text-gray-700 text-sm sm:text-md">⏳ Countdown Ends</p>
-          <p className="text-3xl sm:text-4xl font-bold mt-1">{countdown}</p>
-        </div>:<div></div>}
+        {/* COUNTDOWN */}
+        {item.status === "waiting" && (
+          <div className="mt-6 bg-white/40 backdrop-blur-sm p-4 rounded-xl shadow-inner text-center border border-white/30">
+            <p className="text-gray-100 text-sm">⏳ Countdown Ends</p>
+            <p className="text-4xl font-bold text-white mt-1">{countdown}</p>
+          </div>
+        )}
 
-        {/* Item Details */}
-        <div className="space-y-1 text-center sm:text-left">
-          <p className={`font-semibold ${item.status === 'stopped' ? 'text-green-600' : 'text-yellow-500'}`}>
+        {/* DETAILS */}
+        <div className="mt-6 space-y-1 text-center text-white">
+          <p className={`font-semibold ${item.status === 'stopped' ? 'text-green-200' : 'text-yellow-200'}`}>
             Status: {item.status}
           </p>
 
-          <p className="text-gray-600">Time left to buy: {finish}</p>
-          <p className="text-gray-600">Emotion: {item.emotion}</p>
-          <p className="text-gray-600">Time of Impulse: {item.timeOfImpulse}</p>
-          <p className="text-gray-600 mb-2">Category: {item.category}</p>
+          <p className="">Time left to buy: {finish}</p>
+          <p className="">Emotion: {item.emotion}</p>
+          <p className="">Time of Impulse: {item.timeOfImpulse}</p>
+          <p className="mb-2">Category: {item.category}</p>
 
           {item.link && (
             <a
               href={item.link}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-blue-600 hover:underline"
+              className="text-blue-300 underline hover:text-blue-200"
             >
               View Product →
             </a>
           )}
         </div>
 
-        {item.comments?.length > 0 ? (
-          item.comments.map((c, i) => (
-            <div key={i} className="mb-2 border-b pb-2">
-              <p className="font-semibold">{c.authorName}</p>
-              <p className="text-gray-600 text-sm">{c.text}</p>
-            </div>
-          ))
-        ) : (
-          <p className="text-gray-500">No comments yet.</p>
-        )}
+        {/* COMMENTS */}
+        <div className="mt-6 bg-white/30 backdrop-blur-md p-4 rounded-xl border border-white/30">
+          {item.comments?.length > 0 ? (
+            item.comments.map((c, i) => (
+              <div key={i} className="mb-3 border-b border-white/30 pb-2">
+                <p className="font-semibold text-white">{c.authorName}</p>
+                <p className="text-white/80 text-sm">{c.text}</p>
+              </div>
+            ))
+          ) : (
+            <p className="text-white/80 text-center">No comments yet.</p>
+          )}
+        </div>
 
-        {/* Buttons */}
+        {/* BUTTONS */}
         <div className="flex flex-col sm:flex-row gap-3 mt-6">
           <Button
-            className="bg-red-400 hover:bg-red-500 text-black w-full"
+            className="bg-red-500/80 hover:bg-red-500 text-white w-full"
             onClick={() => updateStatus("bought")}
           >
             Mark as Bought
           </Button>
 
           <Button
-            className="bg-green-400 hover:bg-green-500 text-black w-full"
+            className="bg-green-500/80 hover:bg-green-500 text-white w-full"
             onClick={() => updateStatus("stopped")}
           >
             Forgo Purchase
           </Button>
         </div>
-      </Card>
 
+      </Card>
     </div>
   );
+
 }

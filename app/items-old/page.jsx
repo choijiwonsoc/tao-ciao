@@ -5,6 +5,8 @@ import Card from '../../components/Card';
 import Button from '../../components/Button';
 import Link from 'next/link';
 import { HiPlus } from 'react-icons/hi';
+import { useRouter } from 'next/navigation';
+
 
 export default function Items() {
   const [items, setItems] = useState([]);
@@ -12,6 +14,8 @@ export default function Items() {
   const [user, setUser] = useState(null);
   const [reload, setReload] = useState(0);
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
+  
 
   // Load user from localStorage
   useEffect(() => {
@@ -118,6 +122,8 @@ export default function Items() {
       setUser(updatedUser);
       localStorage.setItem("user", JSON.stringify(updatedUser));
       form.reset();
+      router.push(`/items/${data._id}`); 
+
     } else {
       alert(data.error || 'Failed to add item');
     }

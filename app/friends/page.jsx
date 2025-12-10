@@ -276,7 +276,7 @@ export default function Friends() {
         )}
 
         {friends.map((f) => (
-          <Card key={f._id} className="p-4">
+          <Card key={f._id} className="p-4 bg-white">
             <div className="flex justify-between items-center">
               <div>
                 <p className="font-semibold">{f.username}</p>
